@@ -6,9 +6,17 @@
       "idempotentHint": true,
       "openWorldHint": false
     },
-    "description": "Get details of a specific security configuration scan result. Most controls in a result usually passed; set status to \"failed\" to get only the controls that need fixing.",
+    "description": "Get details of a specific security configuration scan result. Most controls in a result usually passed; set status to \"failed\" to get only the controls that need fixing. If the answer is too large, set summary to list the controls without their rules, then set control_id to page through one control's failed paths.",
     "inputSchema": {
       "properties": {
+        "control_id": {
+          "description": "Return one control, for example C-0017, and a page of its paths (what failed and how to fix it) instead of the whole result (optional; not with status, min_severity or summary)",
+          "type": "string"
+        },
+        "limit": {
+          "description": "With summary: maximum number of controls to return; with control_id: maximum number of paths (optional, default 100, maximum 500)",
+          "type": "number"
+        },
         "manifest_name": {
           "description": "Name of the configuration manifest to get details for (get this from the list_configuration_security_scan_manifests tool)",
           "type": "string"
@@ -21,9 +29,17 @@
           "description": "Namespace of the manifest, as returned by list_configuration_security_scan_manifests (optional, defaults to the namespace in the endpoint's URL)",
           "type": "string"
         },
+        "offset": {
+          "description": "With summary or control_id: number of controls or paths to skip; pass the previous response's next_offset to get the next page (optional, default 0)",
+          "type": "number"
+        },
         "status": {
           "description": "Only return controls with these statuses, comma-separated: failed, passed, skipped (optional; by default every control is returned)",
           "type": "string"
+        },
+        "summary": {
+          "description": "Return only each control's ID, name, severity and status, without its rules and paths, a page at a time (optional, default false); works with status and min_severity",
+          "type": "boolean"
         }
       },
       "required": [
@@ -95,6 +111,10 @@
           "description": "Optional Kubernetes continuation token for pagination",
           "type": "string"
         },
+        "limit": {
+          "description": "Maximum number of manifests per page (optional, default and maximum 100); lower it if a page is too large, then page with continue",
+          "type": "number"
+        },
         "namespace": {
           "description": "Namespace to list (optional, defaults to the namespace in the endpoint's URL). A workload's scan is stored in the workload's namespace; scans of cluster-scoped resources are in Kubescape's own namespace (usually kubescape)",
           "type": "string"
@@ -118,6 +138,10 @@
         "continue": {
           "description": "Optional Kubernetes continuation token for pagination",
           "type": "string"
+        },
+        "limit": {
+          "description": "Maximum number of profiles per page (optional, default and maximum 100); lower it if a page is too large, then page with continue",
+          "type": "number"
         },
         "namespace": {
           "description": "Namespace to list (optional, defaults to the namespace in the endpoint's URL). A container's profile is stored in its workload's namespace",
@@ -184,6 +208,10 @@
         "continue": {
           "description": "Optional Kubernetes continuation token for pagination",
           "type": "string"
+        },
+        "limit": {
+          "description": "Maximum number of SBOMs per page (optional, default and maximum 100); lower it if a page is too large, then page with continue",
+          "type": "number"
         },
         "namespace": {
           "description": "Namespace to list (optional, defaults to the namespace in the endpoint's URL)",
@@ -263,6 +291,10 @@
             "both"
           ],
           "type": "string"
+        },
+        "limit": {
+          "description": "Maximum number of manifests per page (optional, default and maximum 100); lower it if a page is too large, then page with continue",
+          "type": "number"
         },
         "namespace": {
           "description": "Namespace to list (optional, defaults to the namespace in the endpoint's URL)",

@@ -29,6 +29,7 @@ var listSBOMsTool = readOnlyTool(
 	mcp.WithString("continue",
 		mcp.Description("Optional Kubernetes continuation token for pagination"),
 	),
+	listLimitOption("SBOMs", sbomsPageSize),
 )
 
 var listSBOMPackagesTool = readOnlyTool(
@@ -85,7 +86,12 @@ func listSBOMs(r Reader) server.ToolHandlerFunc {
 			return toolErr, nil
 		}
 
-		list, err := r.ListSBOMSyfts(ctx, namespace, metav1.ListOptions{Limit: sbomsPageSize, Continue: continueToken})
+		limit, toolErr := listLimit(args, sbomsPageSize)
+		if toolErr != nil {
+			return toolErr, nil
+		}
+
+		list, err := r.ListSBOMSyfts(ctx, namespace, metav1.ListOptions{Limit: limit, Continue: continueToken})
 		if err != nil {
 			return readError(err)
 		}

@@ -122,18 +122,23 @@ URL.
 
 | Tool | Arguments (required in bold) | Reads |
 |---|---|---|
-| `list_vulnerability_manifests` | `namespace`, `level` (`image`, `workload` or `both`), `continue` | `vulnerabilitymanifests` |
+| `list_vulnerability_manifests` | `namespace`, `level` (`image`, `workload` or `both`), `limit`, `continue` | `vulnerabilitymanifests` |
 | `list_vulnerabilities_in_manifest` | **`manifest_name`**, `namespace`, `min_severity`, `fixable_only`, `include_details`, `limit`, `offset` | `vulnerabilitymanifests` |
 | `list_vulnerability_matches_for_cve` | **`manifest_name`**, **`cve_id`**, `namespace`, `limit`, `offset` | `vulnerabilitymanifests` |
-| `list_sboms` | `namespace`, `continue` | `sbomsyfts` |
+| `list_sboms` | `namespace`, `limit`, `continue` | `sbomsyfts` |
 | `list_sbom_packages` | **`sbom_name`**, `namespace`, `name`, `package_type`, `limit`, `offset` | `sbomsyfts` |
-| `list_configuration_security_scan_manifests` | `namespace`, `continue` | `workloadconfigurationscans` |
-| `get_configuration_security_scan_manifest` | **`manifest_name`**, `namespace`, `status`, `min_severity` | `workloadconfigurationscans` |
-| `list_container_profiles` | `namespace`, `continue` | `containerprofiles` |
+| `list_configuration_security_scan_manifests` | `namespace`, `limit`, `continue` | `workloadconfigurationscans` |
+| `get_configuration_security_scan_manifest` | **`manifest_name`**, `namespace`, `status`, `min_severity`, `summary`, `control_id`, `limit`, `offset` | `workloadconfigurationscans` |
+| `list_container_profiles` | `namespace`, `limit`, `continue` | `containerprofiles` |
 | `get_container_profile` | **`profile_name`**, `namespace`, `section`, `limit`, `offset` | `containerprofiles` |
 
 `list_*` tools return one page; pass the returned `continue` (or
-`next_offset` as `offset`) to get the next one. `get_container_profile`
+`next_offset` as `offset`) to get the next one. The tools that page with
+`continue` return up to 100 objects; a lower `limit` gives smaller pages.
+`get_configuration_security_scan_manifest` returns the whole scan by default;
+with `summary` it returns only each control's ID, name, severity and status, a
+page at a time, and with `control_id` one control and a page of its paths (what failed and how
+to fix it). `get_container_profile`
 returns the whole profile by default; with `section` (`execs`, `opens`,
 `syscalls`, `capabilities`, `endpoints`, `identifiedCallStacks`, `ingress` or
 `egress`) it returns one list of the profile, a page at a time. The tool names
@@ -156,7 +161,8 @@ agent's context:
 The deadline is on the tool's work, not on the HTTP request, so the agent
 always gets an answer: a `TIMEOUT` tool error when the time is up. A result
 above the cap is replaced by a `RESPONSE_TOO_LARGE` tool error with its size
-and how to ask that tool for less. With `"maxResponseBytes": 65536`, asking
+and how to ask that tool for less; every tool has a way to a smaller answer,
+including for its first page. With `"maxResponseBytes": 65536`, asking
 for 100 vulnerabilities with their details gives:
 
 ```json

@@ -35,6 +35,7 @@ var listContainerProfilesTool = readOnlyTool(
 	mcp.WithString("continue",
 		mcp.Description("Optional Kubernetes continuation token for pagination"),
 	),
+	listLimitOption("profiles", containerProfilesPageSize),
 )
 
 var getContainerProfileTool = readOnlyTool(
@@ -90,7 +91,12 @@ func listContainerProfiles(r Reader, o options) server.ToolHandlerFunc {
 			return toolErr, nil
 		}
 
-		list, err := r.ListContainerProfiles(ctx, namespace, metav1.ListOptions{Limit: containerProfilesPageSize, Continue: continueToken})
+		limit, toolErr := listLimit(args, containerProfilesPageSize)
+		if toolErr != nil {
+			return toolErr, nil
+		}
+
+		list, err := r.ListContainerProfiles(ctx, namespace, metav1.ListOptions{Limit: limit, Continue: continueToken})
 		if err != nil {
 			return readError(err)
 		}

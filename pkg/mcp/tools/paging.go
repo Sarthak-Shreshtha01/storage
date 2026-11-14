@@ -65,3 +65,29 @@ func paginate[T any](items []T, p page) ([]T, pageInfo) {
 	info.Returned = len(out)
 	return out, info
 }
+
+// listLimit reads the optional limit argument of a tool that lists objects
+// and pages with continue: 1 to pageSize, pageSize when not given. A smaller
+// page is the way out when a page of pageSize is above the size cap.
+func listLimit(args map[string]any, pageSize int) (int64, *mcp.CallToolResult) {
+	limit, set, toolErr := intArg(args, "limit")
+	if toolErr != nil {
+		return 0, toolErr
+	}
+	if !set {
+		return int64(pageSize), nil
+	}
+	if limit < 1 || limit > pageSize {
+		return 0, toolError(ErrCodeInvalidArgument,
+			fmt.Sprintf("limit must be between 1 and %d", pageSize),
+			map[string]any{"argument": "limit"})
+	}
+	return int64(limit), nil
+}
+
+// listLimitOption is the limit argument of a tool that lists objects.
+func listLimitOption(what string, pageSize int) mcp.ToolOption {
+	return mcp.WithNumber("limit",
+		mcp.Description(fmt.Sprintf("Maximum number of %s per page (optional, default and maximum %d); lower it if a page is too large, then page with continue", what, pageSize)),
+	)
+}
