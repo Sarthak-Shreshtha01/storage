@@ -60,9 +60,13 @@
       "idempotentHint": true,
       "openWorldHint": false
     },
-    "description": "Get details of a specific container profile. A busy container's profile can be large: set section to page through one of its lists (what it executed, opened, called, and its network traffic) instead of getting the whole profile.",
+    "description": "Get details of a specific container profile. A busy container's profile can be large: set section to page through one of its lists (what it executed, opened, called, and its network traffic) instead of getting the whole profile. A profile written by a user can describe several containers: the section answer lists them in containers, and container selects one.",
     "inputSchema": {
       "properties": {
+        "container": {
+          "description": "With section, for a profile that describes several containers: the container to read, by name, or as group/name (containers, initContainers or ephemeralContainers) when a name is in two groups (optional)",
+          "type": "string"
+        },
         "limit": {
           "description": "With section: maximum number of entries to return (optional, default 100, maximum 500)",
           "type": "number"

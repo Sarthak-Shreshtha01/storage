@@ -130,7 +130,7 @@ URL.
 | `list_configuration_security_scan_manifests` | `namespace`, `limit`, `continue` | `workloadconfigurationscans` |
 | `get_configuration_security_scan_manifest` | **`manifest_name`**, `namespace`, `status`, `min_severity`, `summary`, `control_id`, `limit`, `offset` | `workloadconfigurationscans` |
 | `list_container_profiles` | `namespace`, `limit`, `continue` | `containerprofiles` |
-| `get_container_profile` | **`profile_name`**, `namespace`, `section`, `limit`, `offset` | `containerprofiles` |
+| `get_container_profile` | **`profile_name`**, `namespace`, `section`, `container`, `limit`, `offset` | `containerprofiles` |
 
 `list_*` tools return one page; pass the returned `continue` (or
 `next_offset` as `offset`) to get the next one. The tools that page with
@@ -141,7 +141,10 @@ page at a time, and with `control_id` one control and a page of its paths (what 
 to fix it). `get_container_profile`
 returns the whole profile by default; with `section` (`execs`, `opens`,
 `syscalls`, `capabilities`, `endpoints`, `identifiedCallStacks`, `ingress` or
-`egress`) it returns one list of the profile, a page at a time. The tool names
+`egress`) it returns one list of the profile, a page at a time. A profile
+written by a user can describe several containers (`containers`,
+`initContainers`, `ephemeralContainers`); the section answer lists them, and
+`container` (a name, or `group/name`) reads one of them. The tool names
 are the ones `kubescape mcpserver` uses for the same data.
 
 The tools that page through one object with `offset` return its

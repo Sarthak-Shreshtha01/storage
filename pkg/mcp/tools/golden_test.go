@@ -118,6 +118,8 @@ var goldenCalls = []struct {
 	{"get_container_profile/not_found", goldenCall{"get_container_profile", map[string]any{"profile_name": "replicaset-operator-55df98fc6d"}}},
 	{"get_container_profile/forbidden", goldenCall{"get_container_profile", map[string]any{"namespace": restrictedNamespace, "profile_name": "replicaset-operator-55df98fc6d"}}},
 	{"get_container_profile/no_name", goldenCall{"get_container_profile", map[string]any{"namespace": "kubescape"}}},
+	{"get_container_profile/container_without_section", goldenCall{"get_container_profile", map[string]any{"namespace": "kubescape", "profile_name": "replicaset-operator-55df98fc6d", "container": "operator"}}},
+	{"get_container_profile/container_of_learned_profile", goldenCall{"get_container_profile", map[string]any{"namespace": "kubescape", "profile_name": "replicaset-operator-55df98fc6d", "section": "execs", "container": "operator"}}},
 }
 
 func goldenServer(t *testing.T, opts ...Option) *server.MCPServer {
