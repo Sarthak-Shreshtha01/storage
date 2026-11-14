@@ -58,6 +58,7 @@ var getContainerProfileTool = readOnlyTool(
 	mcp.WithNumber("offset",
 		mcp.Description("With section: number of entries to skip; pass the previous response's next_offset to get the next page (optional, default 0)"),
 	),
+	objectVersionOption("profile"),
 )
 
 // The response keeps the field names of kubescape mcpserver's tool. The
@@ -137,6 +138,10 @@ func getContainerProfile(r Reader) server.ToolHandlerFunc {
 		if toolErr != nil {
 			return toolErr, nil
 		}
+		version, toolErr := stringArg(args, "object_version")
+		if toolErr != nil {
+			return toolErr, nil
+		}
 		var p page
 		if section != "" {
 			if !slices.Contains(profileSections, section) {
@@ -155,6 +160,9 @@ func getContainerProfile(r Reader) server.ToolHandlerFunc {
 		if err != nil {
 			return readError(err)
 		}
+		if toolErr := checkObjectVersion(version, "container profile", profile); toolErr != nil {
+			return toolErr, nil
+		}
 		if section == "" {
 			return jsonResult(profile)
 		}
@@ -163,8 +171,9 @@ func getContainerProfile(r Reader) server.ToolHandlerFunc {
 }
 
 type containerProfileSectionResponse struct {
-	Namespace   string `json:"namespace"`
-	ProfileName string `json:"profile_name"`
+	Namespace     string `json:"namespace"`
+	ProfileName   string `json:"profile_name"`
+	ObjectVersion string `json:"object_version,omitempty"`
 	// Status is the profile's kubescape.io/status annotation, for example
 	// "too-large" for a profile above storage's maxContainerProfileSize.
 	Status  string `json:"status,omitempty"`
@@ -177,10 +186,11 @@ type containerProfileSectionResponse struct {
 // it is stored in.
 func profileSectionPage(profile *v1beta1.ContainerProfile, section string, p page) containerProfileSectionResponse {
 	resp := containerProfileSectionResponse{
-		Namespace:   profile.Namespace,
-		ProfileName: profile.Name,
-		Status:      profile.Annotations[helpersv1.StatusMetadataKey],
-		Section:     section,
+		Namespace:     profile.Namespace,
+		ProfileName:   profile.Name,
+		ObjectVersion: objectVersion(profile),
+		Status:        profile.Annotations[helpersv1.StatusMetadataKey],
+		Section:       section,
 	}
 	spec := profile.Spec
 	switch section {

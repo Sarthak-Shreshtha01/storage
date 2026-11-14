@@ -29,6 +29,10 @@
           "description": "Namespace of the manifest, as returned by list_configuration_security_scan_manifests (optional, defaults to the namespace in the endpoint's URL)",
           "type": "string"
         },
+        "object_version": {
+          "description": "The object_version of the previous page (optional): if the scan changed since, for example after a rescan, the call fails with OBJECT_CHANGED instead of returning a page of the new version; then start again from offset 0",
+          "type": "string"
+        },
         "offset": {
           "description": "With summary or control_id: number of controls or paths to skip; pass the previous response's next_offset to get the next page (optional, default 0)",
           "type": "number"
@@ -65,6 +69,10 @@
         },
         "namespace": {
           "description": "Namespace of the profile, as returned by list_container_profiles (optional, defaults to the namespace in the endpoint's URL)",
+          "type": "string"
+        },
+        "object_version": {
+          "description": "The object_version of the previous page (optional): if the profile changed since, for example after a rescan, the call fails with OBJECT_CHANGED instead of returning a page of the new version; then start again from offset 0",
           "type": "string"
         },
         "offset": {
@@ -175,6 +183,10 @@
           "description": "Namespace of the SBOM (optional, defaults to the namespace in the endpoint's URL)",
           "type": "string"
         },
+        "object_version": {
+          "description": "The object_version of the previous page (optional): if the SBOM changed since, for example after a rescan, the call fails with OBJECT_CHANGED instead of returning a page of the new version; then start again from offset 0",
+          "type": "string"
+        },
         "offset": {
           "description": "Number of packages to skip; pass the previous response's next_offset to get the next page (optional, default 0)",
           "type": "number"
@@ -238,7 +250,7 @@
           "type": "boolean"
         },
         "include_details": {
-          "description": "Include description, CVSS, URLs, advisories and data source for each entry (optional, default false; makes the response much larger)",
+          "description": "Include description, CVSS, URLs, advisories and data source for each entry, and fix_data_source when the fixed version comes from another source (optional, default false; makes the response much larger)",
           "type": "boolean"
         },
         "limit": {
@@ -255,6 +267,10 @@
         },
         "namespace": {
           "description": "Namespace of the manifest (optional, defaults to the namespace in the endpoint's URL)",
+          "type": "string"
+        },
+        "object_version": {
+          "description": "The object_version of the previous page (optional): if the manifest changed since, for example after a rescan, the call fails with OBJECT_CHANGED instead of returning a page of the new version; then start again from offset 0",
           "type": "string"
         },
         "offset": {
@@ -330,6 +346,10 @@
         },
         "namespace": {
           "description": "Namespace of the manifest (optional, defaults to the namespace in the endpoint's URL)",
+          "type": "string"
+        },
+        "object_version": {
+          "description": "The object_version of the previous page (optional): if the manifest changed since, for example after a rescan, the call fails with OBJECT_CHANGED instead of returning a page of the new version; then start again from offset 0",
           "type": "string"
         },
         "offset": {

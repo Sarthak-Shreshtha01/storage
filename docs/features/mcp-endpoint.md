@@ -144,6 +144,14 @@ returns the whole profile by default; with `section` (`execs`, `opens`,
 `egress`) it returns one list of the profile, a page at a time. The tool names
 are the ones `kubescape mcpserver` uses for the same data.
 
+The tools that page through one object with `offset` return its
+`object_version` (its UID and resourceVersion). Pass it back with the next
+`offset`: if the object changed in between, for example because Kubescape
+rescanned the image, the call fails with `OBJECT_CHANGED` instead of returning
+a page of the new version, and the caller starts again from offset 0. With
+`include_details`, a vulnerability whose fix comes from another record than its
+severity also names that record's `fix_data_source`.
+
 ## Limits
 
 Every tool call is bounded, so one call cannot hold storage or flood the
@@ -215,6 +223,7 @@ on (the operator chart turns it on). Storage sizes that queue from
 | A bad argument | tool error `INVALID_ARGUMENT` |
 | The call took longer than `mcp.callTimeout` | tool error `TIMEOUT` |
 | The result is above `mcp.maxResponseBytes` | tool error `RESPONSE_TOO_LARGE`, with a hint to page or filter |
+| The object changed since the `object_version` the call gave | tool error `OBJECT_CHANGED`, with the new `object_version` |
 
 A tool error is a normal MCP result with `isError: true` and the code and
 message as JSON text, so the agent can read it and try again.

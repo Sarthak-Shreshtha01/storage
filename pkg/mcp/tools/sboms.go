@@ -54,6 +54,7 @@ var listSBOMPackagesTool = readOnlyTool(
 	mcp.WithNumber("offset",
 		mcp.Description("Number of packages to skip; pass the previous response's next_offset to get the next page (optional, default 0)"),
 	),
+	objectVersionOption("SBOM"),
 )
 
 // sbomEntry describes one stored SBOM without its content. The field names
@@ -127,11 +128,20 @@ func listSBOMPackages(r Reader) server.ToolHandlerFunc {
 		if toolErr != nil {
 			return toolErr, nil
 		}
+		version, toolErr := stringArg(args, "object_version")
+		if toolErr != nil {
+			return toolErr, nil
+		}
 		sbom, err := r.GetSBOMSyft(ctx, namespace, name)
 		if err != nil {
 			return readError(err)
 		}
-		return jsonResult(filterSBOMPackages(sbom, opts))
+		if toolErr := checkObjectVersion(version, "SBOM", sbom); toolErr != nil {
+			return toolErr, nil
+		}
+		resp := filterSBOMPackages(sbom, opts)
+		resp.ObjectVersion = objectVersion(sbom)
+		return jsonResult(resp)
 	}
 }
 
@@ -148,7 +158,8 @@ type sbomPackageEntry struct {
 }
 
 type sbomPackageListResponse struct {
-	SBOMName string `json:"sbom_name"`
+	SBOMName      string `json:"sbom_name"`
+	ObjectVersion string `json:"object_version,omitempty"`
 	// Status is the SBOM's kubescape.io/status annotation. An SBOM that was
 	// too large to store has a status and no packages, which is not the same
 	// as an image with no packages.

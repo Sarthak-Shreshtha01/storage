@@ -67,6 +67,7 @@ var getConfigurationScanTool = readOnlyTool(
 	mcp.WithNumber("offset",
 		mcp.Description("With summary or control_id: number of controls or paths to skip; pass the previous response's next_offset to get the next page (optional, default 0)"),
 	),
+	objectVersionOption("scan"),
 )
 
 // The response keeps the field names of kubescape mcpserver's tool. The
@@ -147,6 +148,10 @@ func getConfigurationScan(r Reader) server.ToolHandlerFunc {
 		if toolErr != nil {
 			return toolErr, nil
 		}
+		version, toolErr := stringArg(args, "object_version")
+		if toolErr != nil {
+			return toolErr, nil
+		}
 		var p page
 		switch {
 		case controlID != "" && (filter.active() || summary):
@@ -163,6 +168,9 @@ func getConfigurationScan(r Reader) server.ToolHandlerFunc {
 		scan, err := r.GetWorkloadConfigurationScan(ctx, namespace, name)
 		if err != nil {
 			return readError(err)
+		}
+		if toolErr := checkObjectVersion(version, "configuration scan", scan); toolErr != nil {
+			return toolErr, nil
 		}
 		if controlID != "" {
 			return controlPathsPage(scan, controlID, p)
@@ -250,8 +258,9 @@ type scannedControlSummary struct {
 }
 
 type scannedControlsSummaryResponse struct {
-	Namespace    string `json:"namespace"`
-	ManifestName string `json:"manifest_name"`
+	Namespace     string `json:"namespace"`
+	ManifestName  string `json:"manifest_name"`
+	ObjectVersion string `json:"object_version,omitempty"`
 	pageInfo
 	Controls []scannedControlSummary `json:"controls"`
 }
@@ -260,8 +269,9 @@ type scannedControlsSummaryResponse struct {
 // rules, most severe first, then by control ID.
 func scannedControlsSummary(scan *v1beta1.WorkloadConfigurationScan, p page) scannedControlsSummaryResponse {
 	resp := scannedControlsSummaryResponse{
-		Namespace:    scan.Namespace,
-		ManifestName: scan.Name,
+		Namespace:     scan.Namespace,
+		ManifestName:  scan.Name,
+		ObjectVersion: objectVersion(scan),
 	}
 	controls := make([]scannedControlSummary, 0, len(scan.Spec.Controls))
 	for id, c := range scan.Spec.Controls {
@@ -296,13 +306,14 @@ type controlPathEntry struct {
 }
 
 type controlPathsResponse struct {
-	Namespace    string               `json:"namespace"`
-	ManifestName string               `json:"manifest_name"`
-	ControlID    string               `json:"control_id"`
-	Name         string               `json:"name"`
-	Severity     string               `json:"severity"`
-	Status       string               `json:"status"`
-	Rules        []controlRuleSummary `json:"rules"`
+	Namespace     string               `json:"namespace"`
+	ManifestName  string               `json:"manifest_name"`
+	ObjectVersion string               `json:"object_version,omitempty"`
+	ControlID     string               `json:"control_id"`
+	Name          string               `json:"name"`
+	Severity      string               `json:"severity"`
+	Status        string               `json:"status"`
+	Rules         []controlRuleSummary `json:"rules"`
 	pageInfo
 	Paths []controlPathEntry `json:"paths"`
 }
@@ -318,13 +329,14 @@ func controlPathsPage(scan *v1beta1.WorkloadConfigurationScan, controlID string,
 			map[string]any{"argument": "control_id"}), nil
 	}
 	resp := controlPathsResponse{
-		Namespace:    scan.Namespace,
-		ManifestName: scan.Name,
-		ControlID:    id,
-		Name:         c.Name,
-		Severity:     c.Severity.Severity,
-		Status:       c.Status.Status,
-		Rules:        make([]controlRuleSummary, 0, len(c.Rules)),
+		Namespace:     scan.Namespace,
+		ManifestName:  scan.Name,
+		ObjectVersion: objectVersion(scan),
+		ControlID:     id,
+		Name:          c.Name,
+		Severity:      c.Severity.Severity,
+		Status:        c.Status.Status,
+		Rules:         make([]controlRuleSummary, 0, len(c.Rules)),
 	}
 	var paths []controlPathEntry
 	for _, rule := range c.Rules {
